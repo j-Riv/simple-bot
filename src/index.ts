@@ -13,6 +13,6 @@ app.use(express.json());
 
 routes(app);
 
-app.listen(8100, function () {
-  console.log('App listening on port 8100.');
+app.listen(3000, function () {
+  console.log('App listening on port 3000.');
 });

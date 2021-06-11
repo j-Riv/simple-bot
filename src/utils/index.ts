@@ -2,7 +2,31 @@ import fetch from 'node-fetch';
 import { google } from 'googleapis';
 import dotenv from 'dotenv';
 import gkeys from '../googlekeys.json';
+import randomResponses from '../data/random-responses';
 dotenv.config();
+
+export const createResponse = async (dm: string, name: string): Promise<string> => {
+  const greetings: string[] = ['hello', 'hi', 'hey', 'hola'];
+  const words: string[] = ['problem', 'issue', "does't work", "didn't work", 'working'];
+  const hw: string[] = ['computer', 'printer', 'internet'];
+  const sw: string[] = ['netsuite', 'shopify'];
+  const h: string[] = ['hungry', 'lunch', 'food', 'dinner'];
+  if (greetings.some(v => dm.includes(v))) {
+    return `Hello ${name} how are you?`;
+  } else if (h.some(v => dm.includes(v))) {
+    return `Sounds like your hungry, how about giving the wheel of lunch a try: https://wheelof.com/lunch/?zip=92703&query=lunch&radius=5`;
+  } else if (sw.some(v => dm.includes(v))) {
+    return `I see your having some sort of software issue. Please email or message jriv@suavecito.com for help.`;
+  } else if (hw.some(v => dm.includes(v))) {
+    return `I see your having some sort of hardware issue. Have you turned it off and on again? If you continue having issues please email or message jorge@suavecito.com for help.`;
+  } else if (words.some(v => dm.includes(v))) {
+    return `I see your having some sort of problem please message someone better equiped to help you. I'm not that smart yet.`;
+  } else if (dm.includes('weather')) {
+    return await getWeather();
+  } else {
+    return randomResponses[Math.floor(Math.random() * randomResponses.length)];
+  }
+};
 
 export const formatTime = (timestamp: number): string => {
   const date = new Date(timestamp * 1000);
@@ -21,31 +45,31 @@ export const formatTime = (timestamp: number): string => {
   return strTime;
 };
 
-export const getWeather = async (): Promise<string> => {
-  const coordinates = {
-    office: {
-      lat: '33.7465549',
-      lon: '-117.9100623',
-    },
-  };
+export const getWeather = async (zip: string = '92703'): Promise<string> => {
   try {
-    const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/onecall?lat=${coordinates.office.lat}&lon=${coordinates.office.lon}&units=imperial&exclude=hourly,daily,minutely&appid=${process.env.OPEN_WEATHER_API_KEY}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    if (parseInt(zip) && zip.length <= 5) { 
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?zip=${zip}&units=imperial&appid=${process.env.OPEN_WEATHER_API_KEY}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      const jsonResponse = await response.json();
+      if (jsonResponse) {
+        const location = jsonResponse.name;
+        const currentTime = formatTime(jsonResponse.dt + jsonResponse.timezone);
+        const sunrise = formatTime(jsonResponse.sys.sunrise + jsonResponse.timezone);
+        const sunset = formatTime(jsonResponse.sys.sunset + jsonResponse.timezone);
+        const currentTemp = `${jsonResponse.main.temp} °F`;
+        const minTemp = `${jsonResponse.main.temp_min} °F`;
+        const maxTemp = `${jsonResponse.main.temp_max} °F`;
+        return `Weather Data for ${location}. Current Time: ${currentTime}. Sunrise: ${sunrise}. Sunset: ${sunset}. Current Temp: ${currentTemp}, with a low of ${minTemp} and a high of ${maxTemp}.`;
       }
-    );
-    const jsonResponse = await response.json();
-    if (jsonResponse) {
-      const currentTime = formatTime(jsonResponse.current.dt);
-      const sunrise = formatTime(jsonResponse.current.sunrise);
-      const sunset = formatTime(jsonResponse.current.sunset);
-      const currentTemp = `${jsonResponse.current.temp} °F`;
-      return `Weather: temperature: ${currentTemp}, current time: ${currentTime}, sunrise: ${sunrise}, sunset: ${sunset}.`;
     }
+    
     return 'Could not get weather data.';
   } catch (e) {
     console.log('ERROR GETTING WEATHER DATA', e.message);

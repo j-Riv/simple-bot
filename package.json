@@ -24,7 +24,7 @@
   },
   "scripts": {
     "start:dev": "nodemon",
-    "build": "rimraf ./build && tsc",
+    "build": "rimraf ./dist && tsc",
     "start": "npm run build && node dist/index.js",
     "lint": "eslint . --ext .ts"
   }
