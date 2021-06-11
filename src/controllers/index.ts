@@ -1,15 +1,18 @@
 import { Request, Response } from 'express';
 import timer from 'timers';
 import { getWeather, postMessage } from '../utils';
-import randomResponses from '../helpers/random-responses';
+import randomResponses from '../data/random-responses';
 
 const createResponse = async (dm: string, name: string): Promise<string> => {
   const greetings: string[] = ['hello', 'hi', 'hey', 'hola'];
   const words: string[] = ['problem', 'issue', "does't work", "didn't work", 'working'];
   const hw: string[] = ['computer', 'printer', 'internet'];
   const sw: string[] = ['netsuite', 'shopify'];
+  const h: string[] = ['hungry', 'lunch', 'food', 'dinner'];
   if (greetings.some(v => dm.includes(v))) {
     return `Hello ${name} how are you?`;
+  } else if (h.some(v => dm.includes(v))) {
+    return `Sounds like your hungry, how about giving the wheel of lunch a try: https://wheelof.com/lunch/?zip=92703&query=lunch&radius=5`;
   } else if (sw.some(v => dm.includes(v))) {
     return `I see your having some sort of software issue. Please email or message jriv@suavecito.com for help.`;
   } else if (hw.some(v => dm.includes(v))) {
